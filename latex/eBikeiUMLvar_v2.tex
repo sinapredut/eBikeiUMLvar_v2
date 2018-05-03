@@ -1,0 +1,151 @@
+\documentclass[10pt,a4paper]{report}
+\usepackage{bsymb,b2latex}
+\begin{document}
+\MultiTitle{eBikeiUMLvar\_v2}
+\MultiHeader{CONTEXT}{cruise\_control}
+\CONTEXT{cruise\_control}{}{}
+\SETS{
+	\Set{BEFORECC}{}
+}
+\CONSTANTS{
+	\Constant{pa}{}
+	\Constant{po}{}
+	\Constant{undefined}{}
+}
+\AXIOMS{
+	\Axiom{axm1}{false}{$partition(BEFORECC, \{pa\}, \{po\}, \{undefined\})$}{}
+}
+\END
+\MultiHeader{MACHINE}{M0}
+\MACHINE{M0}{}{cruise\_control}{}
+\VARIABLES{
+	\Variable{PO}{}
+	\Variable{PA}{}
+	\Variable{BRAKE}{}
+	\Variable{CC}{}
+	\Variable{PC}{}
+	\Variable{engrun}{}
+	\Variable{beforecc}{}
+}
+\INVARIANTS{
+	\Invariant{typeof\_PO}{false}{$PO \in{} BOOL$}{}
+	\Invariant{typeof\_PA}{false}{$PA \in{} BOOL$}{}
+	\Invariant{typeof\_BRAKE}{false}{$BRAKE \in{} BOOL$}{}
+	\Invariant{typeof\_CC}{false}{$CC \in{} BOOL$}{}
+	\Invariant{typeof\_PC}{false}{$PC \in{} BOOL$}{}
+	\Invariant{distinct\_states\_in\_iUML}{false}{$TRUE \in{} \{PO, PA, BRAKE, CC, PC\} \limp{} partition(\{TRUE\}, \{PO\} \binter{} \{TRUE\}, \{PA\} \binter{} \{TRUE\}, \{BRAKE\} \binter{} \{TRUE\}, \{CC\} \binter{} \{TRUE\}, \{PC\} \binter{} \{TRUE\})$}{}
+	\Invariant{inv1}{false}{$engrun\in{}BOOL$}{}
+	\Invariant{inv2}{false}{$beforecc\subseteq{}BEFORECC$}{}
+}
+\EVENTS{
+\INITIALISATION{false}{}{
+	\ACTIONS{false}{
+		\Action{init\_PO}{$PO \bcmeq{} TRUE$}{true}{}
+		\Action{init\_PA}{$PA \bcmeq{} FALSE$}{true}{}
+		\Action{init\_BRAKE}{$BRAKE \bcmeq{} FALSE$}{true}{}
+		\Action{init\_CC}{$CC \bcmeq{} FALSE$}{true}{}
+		\Action{init\_PC}{$PC \bcmeq{} FALSE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}FALSE$}{true}{}
+		\Action{act2}{$beforecc\bcmeq{}\{undefined\}$}{true}{}
+	}
+}
+\EVT{PedalOnly}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PA\_or\_isin\_CC}{false}{$(PA = TRUE \lor{} CC = TRUE)$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PA}{$PA \bcmeq{} FALSE$}{true}{}
+		\Action{leave\_CC}{$CC \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_PO}{$PO \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}FALSE$}{true}{}
+	}
+}
+\EVT{PedalAssist}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PO\_or\_isin\_CC}{false}{$(PO = TRUE \lor{} CC = TRUE)$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PO}{$PO \bcmeq{} FALSE$}{true}{}
+		\Action{leave\_CC}{$CC \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_PA}{$PA \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}TRUE$}{true}{}
+	}
+}
+\EVT{Brake}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PA\_or\_isin\_PC\_or\_isin\_PO}{false}{$(PA = TRUE \lor{} PC = TRUE \lor{} PO = TRUE)$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PA}{$PA \bcmeq{} FALSE$}{true}{}
+		\Action{leave\_PC}{$PC \bcmeq{} FALSE$}{true}{}
+		\Action{leave\_PO}{$PO \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_BRAKE}{$BRAKE \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}FALSE$}{true}{}
+	}
+}
+\EVT{Stop}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_BRAKE}{false}{$BRAKE = TRUE$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_BRAKE}{$BRAKE \bcmeq{} FALSE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}FALSE$}{true}{}
+	}
+}
+\EVT{PedalCharge}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PO}{false}{$PO = TRUE$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PO}{$PO \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_PC}{$PC \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}TRUE$}{true}{}
+	}
+}
+\EVT{PedalOnly2CruiseControl}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PO}{false}{$PO = TRUE$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PO}{$PO \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_CC}{$CC \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}TRUE$}{true}{}
+		\Action{act2}{$beforecc\bcmeq{}\{po\}$}{true}{}
+	}
+}
+\EVT{PedalAssist2CruiseControl}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_PA}{false}{$PA = TRUE$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_PA}{$PA \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_CC}{$CC \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}TRUE$}{true}{}
+		\Action{act2}{$beforecc\bcmeq{}\{pa\}$}{true}{}
+	}
+}
+\EVT{BrakeCruiseControl2PedalAssist}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_CC}{false}{$CC = TRUE$}{true}{}
+		\Guard{grd1}{false}{$beforecc=\{pa\}$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_CC}{$CC \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_PA}{$PA \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}TRUE$}{true}{}
+	}
+}
+\EVT{BrakeCruiseControl2PedalOnly}{false}{ordinary}{}{}{
+	\GUARDS{false}{
+		\Guard{isin\_CC}{false}{$CC = TRUE$}{true}{}
+		\Guard{grd1}{false}{$beforecc=\{po\}$}{true}{}
+	}
+	\ACTIONS{true}{
+		\Action{leave\_CC}{$CC \bcmeq{} FALSE$}{true}{}
+		\Action{enter\_PO}{$PO \bcmeq{} TRUE$}{true}{}
+		\Action{act1}{$engrun\bcmeq{}FALSE$}{true}{}
+	}
+}
+}
+\END
+\end{document}
